@@ -40,19 +40,15 @@ class Post
 
     public static function all() {
         $files = File::files(resource_path("/posts"));
-        $posts = [];
-
-        foreach ($files as $file) {
+        return collect($files)->map(function($file){
             $document = YamlFrontMatter::parseFile($file);
-            $posts[] = new Post(
+            return new Post(
                 $document->title,
                 $document->excerpt,
                 $document->date,
                 $document->body,
                 $document->slug
             );
-            
-        }
-        return $posts;
+        });
     }
 }
