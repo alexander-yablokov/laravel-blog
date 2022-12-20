@@ -27,26 +27,26 @@ class Post
 
     public static function find($slug)
     {
-        // обработка ошибок
-        if (!file_exists($path = resource_path("/posts/{$slug}.html"))) {
-            throw new ModelNotFoundException();
-            // abort(404);
-        }
-        return cache()->remember("posts.{$slug}", 5, function () use ($path) {
-            return file_get_contents($path);
-        });
+        // of all the blog posts, find the one with a slug that matches the one that was requested
+        $posts = static::all();
+
+        return $posts->firstWhere('slug', $slug);
 
     }
 
     public static function all() {
         $files = File::files(resource_path("/posts"));
-        return collect($files)->map(function($file){
-            $document = YamlFrontMatter::parseFile($file);
+
+        return collect($files)  
+        ->map(function($file) {
+            return YamlFrontMatter::parseFile($file);
+        })
+        ->map(function($document) {
             return new Post(
                 $document->title,
                 $document->excerpt,
                 $document->date,
-                $document->body,
+                $document->body(),
                 $document->slug
             );
         });
